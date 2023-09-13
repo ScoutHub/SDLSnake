@@ -15,7 +15,7 @@ typedef struct {
 	SDL_Rect* snakeArray; 
 } Snake;
 
-SDL_Rect generate_apple(SDL_Renderer* r) {
+SDL_Rect generate_apple() {
 	SDL_Rect apple;
 	int rand_x = rand() % SCREEN_WIDTH - 20, rand_y = rand() % SCREEN_HEIGHT - 20;
 	rand_x = (rand_x / 20) * 20;
@@ -113,11 +113,25 @@ bool check_collision(Snake* s) {
 	return false;
 }
 
+bool eat(SDL_Renderer* r ,Snake* s, SDL_Rect* apple) {
+	return (s->snakeArray[0].x == apple->x && s->snakeArray[0].y == apple->y);
+}
+
 void set_default_pos(Snake* s) {
 	s->snakeArray[0].x = DEFAULT_POSITION_X;
 	s->snakeArray[0].y = DEFAULT_POSITION_Y;
 	s->snakeArray[0].w = BLOC_SIZE;
 	s->snakeArray[0].h = BLOC_SIZE;
+}
+
+int update_snake(Snake* s){
+	++s->len;
+	s->snakeArray = (SDL_Rect*) realloc(s->snakeArray, s->len * sizeof(SDL_Rect));
+	if(s->snakeArray == NULL){
+		printf("ERROR: Cannot reallocate Snake");
+		return -1;
+	}
+	return 0;
 }
 
 int main(void) {
@@ -142,9 +156,9 @@ int main(void) {
 
 	int x_dir = 1, y_dir = 0;
 	SDL_Event event;
-	SDL_Rect apple = generate_apple(renderer);
+	SDL_Rect apple = generate_apple();
 	Snake snake;
-	snake.len = 5;
+	snake.len = 1;
 	snake.snakeArray = (SDL_Rect*) malloc(snake.len * sizeof(SDL_Rect));
 	if(snake.snakeArray == NULL) {
 		printf("ERROR: Cannot malloc ptr.\n");
@@ -191,6 +205,13 @@ int main(void) {
 					break;
 			}
 		}
+		bool is_eat = eat(renderer, &snake, &apple);
+		if(is_eat) {
+			apple = generate_apple();
+			if(update_snake(&snake)){
+				break;
+			}
+		};
 		draw(renderer, &snake, &apple);
 		quit = check_collision(&snake);
 		SDL_Delay(GAME_SPEED);

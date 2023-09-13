@@ -28,21 +28,25 @@ void draw_background(SDL_Renderer* r) {
 void draw_rectangle(SDL_Renderer* r, Snake* s){
 	for(int i = 0; i < s->len; i++) {
 		SDL_SetRenderDrawColor( r, 0, 0, 255, 255 );
-		SDL_RenderFillRect(r, s->snakeArray[i]);
+		SDL_RenderFillRect(r, &(s->snakeArray[i]));
 		SDL_RenderPresent(r);
 	}
 }
 
-void check_dir(int* x, int* y, SDL_Rect* r){
-	if(*(x) == 1) r->x += 20;
-	else if(*(x) == -1) r->x -= 20;
-	else if(*(y) == 1) r->y += 20;
-	else if(*(y) == -1) r->y -= 20;
+void check_dir(int* x, int* y, Snake* s){
+	int i = 0;
+	while(i < s->len) {
+		if(*(x) == 1) s->snakeArray[i].x += 20;
+		else if(*(x) == -1) s->snakeArray[i].x -= 20;
+		else if(*(y) == 1) s->snakeArray[i].y += 20;
+		else if(*(y) == -1) s->snakeArray[i].y -= 20;
+		i++;
+	}
 }
 
-bool check_collision(SDL_Rect* r) {
-	if(r->x == (SCREEN_WIDTH - BLOC_SIZE) || r->x < (0 + BLOC_SIZE)) return true;
-	else if(r->y == (SCREEN_HEIGHT - BLOC_SIZE) || r->y < (0 + BLOC_SIZE)) return true;
+bool check_collision(Snake* s) {
+	if(s->snakeArray[0].x == (SCREEN_WIDTH - BLOC_SIZE) || s->snakeArray[0].x < (0 + BLOC_SIZE)) return true;
+	else if(s->snakeArray[0].y == (SCREEN_HEIGHT - BLOC_SIZE) || s->snakeArray[0].y < (0 + BLOC_SIZE)) return true;
 	return false;
 }
 
@@ -77,25 +81,17 @@ int main(void) {
 	Snake snake;
 	snake.len = 1;
 	snake.snakeArray = (SDL_Rect*) malloc(snake.len * sizeof(SDL_Rect));
-	if(snake.snakeArray == NULL) printf("Cannot malloc ptr.\n");
-
-	set_default_pos(&snake);
-	for (int i = 0; i < snake.len; i++) {
-		printf("index of element : %d\n", i);
-		printf("x position : %d\n", snake.snakeArray[i].x);
-		printf("y position : %d\n", snake.snakeArray[i].y);
+	if(snake.snakeArray == NULL) {
+		printf("ERROR: Cannot malloc ptr.\n");
+		destroy_game(renderer, window);
+		return -1;
 	}
-	/*SDL_Rect r;
-
-	r.x = DEFAULT_POSITION_X;
-	r.y = DEFAULT_POSITION_Y;
-	r.w = BLOC_SIZE;
-	r.h = BLOC_SIZE;
+	set_default_pos(&snake);
 	bool quit = false;
-	draw_rectangle(renderer, &r);
+	draw_rectangle(renderer, &snake);
 	while(!quit) {
 		draw_background(renderer);
-		check_dir(&x_dir, &y_dir, &r);
+		check_dir(&x_dir, &y_dir, &snake);
 		while(SDL_PollEvent(&event)) {
 			switch (event.type) {
 				case SDL_KEYDOWN:
@@ -131,12 +127,11 @@ int main(void) {
 					break;
 			}
 		}
-		draw_rectangle(renderer, &r);
-		quit = check_collision(&r);
+		draw_rectangle(renderer, &snake);
+		quit = check_collision(&snake);
 		SDL_Delay(GAME_SPEED);
 	}
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Game info", "You losed.", window);
-	*/
 	free(snake.snakeArray);
 	destroy_game(renderer, window);
 	return 0;

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
+#include <time.h>
 
 #define SCREEN_WIDTH    800
 #define SCREEN_HEIGHT   600
@@ -14,6 +15,18 @@ typedef struct {
 	SDL_Rect* snakeArray; 
 } Snake;
 
+SDL_Rect generate_apple(SDL_Renderer* r) {
+	SDL_Rect apple;
+	int rand_x = rand() % SCREEN_WIDTH - 20, rand_y = rand() % SCREEN_HEIGHT - 20;
+	rand_x = (rand_x / 20) * 20;
+	rand_y = (rand_y / 20) * 20;
+	apple.x = rand_x;
+	apple.y = rand_y;
+	apple.w = BLOC_SIZE;
+	apple.h = BLOC_SIZE;
+	return apple;
+}
+
 void destroy_game(SDL_Renderer* r, SDL_Window* w) {
 	SDL_DestroyRenderer(r);
 	SDL_DestroyWindow(w);
@@ -25,21 +38,71 @@ void draw_background(SDL_Renderer* r) {
     SDL_RenderClear(r);
 }
 
-void draw_rectangle(SDL_Renderer* r, Snake* s){
+void draw(SDL_Renderer* r, Snake* s, SDL_Rect* apple){
 	for(int i = 0; i < s->len; i++) {
-		SDL_SetRenderDrawColor( r, 0, 0, 255, 255 );
+		SDL_RenderDrawRect(r, &(s->snakeArray[i]));
+		SDL_SetRenderDrawColor(r, 0, 0, 255, 255 );
 		SDL_RenderFillRect(r, &(s->snakeArray[i]));
-		SDL_RenderPresent(r);
 	}
+	SDL_SetRenderDrawColor(r, 0, 255, 0, 255 );
+	SDL_RenderFillRect(r, apple);
+	SDL_RenderPresent(r);
 }
 
 void check_dir(int* x, int* y, Snake* s){
-	int i = 0;
+	int i = 0, last_x = 0, last_y = 0;
 	while(i < s->len) {
-		if(*(x) == 1) s->snakeArray[i].x += 20;
-		else if(*(x) == -1) s->snakeArray[i].x -= 20;
-		else if(*(y) == 1) s->snakeArray[i].y += 20;
-		else if(*(y) == -1) s->snakeArray[i].y -= 20;
+		if(*(x) == 1){
+			if(i == 0){
+				last_x = s->snakeArray[i].x;
+				last_y = s->snakeArray[i].y;
+				s->snakeArray[i].x += 20;
+			} else {
+				int temp_x = s->snakeArray[i].x, temp_y = s->snakeArray[i].y;
+				s->snakeArray[i].x = last_x;
+				s->snakeArray[i].y = last_y;
+				last_x = temp_x;
+				last_y = temp_y;
+			} 
+		} else if(*(x) == -1){
+			if(i == 0){
+				last_x = s->snakeArray[i].x;
+				last_y = s->snakeArray[i].y;
+				s->snakeArray[i].x -= 20;
+			} else {
+				int temp_x = s->snakeArray[i].x, temp_y = s->snakeArray[i].y;
+				s->snakeArray[i].x = last_x;
+				s->snakeArray[i].y = last_y;
+				last_x = temp_x;
+				last_y = temp_y;
+			}
+		} else if(*(y) == 1){
+			if(i == 0){
+				last_x = s->snakeArray[i].x;
+				last_y = s->snakeArray[i].y;
+				s->snakeArray[0].y += 20;
+			} else {
+				int temp_x = s->snakeArray[i].x, temp_y = s->snakeArray[i].y;
+				s->snakeArray[i].x = last_x;
+				s->snakeArray[i].y = last_y;
+				last_x = temp_x;
+				last_y = temp_y;
+			}
+		} else if(*(y) == -1){
+			if(i == 0){
+				last_x = s->snakeArray[i].x;
+				last_y = s->snakeArray[i].y;
+				s->snakeArray[0].y -= 20;
+			} else {
+				int temp_x = s->snakeArray[i].x, temp_y = s->snakeArray[i].y;
+				s->snakeArray[i].x = last_x;
+				s->snakeArray[i].y = last_y;
+				last_x = temp_x;
+				last_y = temp_y;
+			}
+		}
+		s->snakeArray[i].w = BLOC_SIZE;
+		s->snakeArray[i].h = BLOC_SIZE;
 		i++;
 	}
 }
@@ -58,6 +121,7 @@ void set_default_pos(Snake* s) {
 }
 
 int main(void) {
+	srand(time(NULL));
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
 		printf("ERROR: SDL wasn't able to initialize.");
 		return -1;
@@ -78,8 +142,9 @@ int main(void) {
 
 	int x_dir = 1, y_dir = 0;
 	SDL_Event event;
+	SDL_Rect apple = generate_apple(renderer);
 	Snake snake;
-	snake.len = 1;
+	snake.len = 5;
 	snake.snakeArray = (SDL_Rect*) malloc(snake.len * sizeof(SDL_Rect));
 	if(snake.snakeArray == NULL) {
 		printf("ERROR: Cannot malloc ptr.\n");
@@ -88,7 +153,6 @@ int main(void) {
 	}
 	set_default_pos(&snake);
 	bool quit = false;
-	draw_rectangle(renderer, &snake);
 	while(!quit) {
 		draw_background(renderer);
 		check_dir(&x_dir, &y_dir, &snake);
@@ -127,7 +191,7 @@ int main(void) {
 					break;
 			}
 		}
-		draw_rectangle(renderer, &snake);
+		draw(renderer, &snake, &apple);
 		quit = check_collision(&snake);
 		SDL_Delay(GAME_SPEED);
 	}

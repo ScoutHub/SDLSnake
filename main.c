@@ -108,8 +108,8 @@ void check_dir(int* x, int* y, Snake* s){
 }
 
 bool check_collision(Snake* s) {
-	if(s->snakeArray[0].x == (SCREEN_WIDTH - BLOC_SIZE) || s->snakeArray[0].x < (0 + BLOC_SIZE)) return true;
-	else if(s->snakeArray[0].y == (SCREEN_HEIGHT - BLOC_SIZE) || s->snakeArray[0].y < (0 + BLOC_SIZE)) return true;
+	if(s->snakeArray[0].x == (SCREEN_WIDTH) || s->snakeArray[0].x < (0)) return true;
+	else if(s->snakeArray[0].y == (SCREEN_HEIGHT) || s->snakeArray[0].y < (0)) return true;
 	return false;
 }
 
@@ -152,9 +152,9 @@ int main(void) {
 		printf("ERROR: Renderer wasn't able to render");
 		return -1;
 	}
-	draw_background(renderer);
+	//draw_background(renderer);
 
-	int x_dir = 1, y_dir = 0;
+	int x_dir = 1, y_dir = 0, temp_x = 0, temp_y = 0;
 	SDL_Event event;
 	SDL_Rect apple = generate_apple();
 	Snake snake;
@@ -167,6 +167,7 @@ int main(void) {
 	}
 	set_default_pos(&snake);
 	bool quit = false;
+	bool paused = false;
 	while(!quit) {
 		draw_background(renderer);
 		check_dir(&x_dir, &y_dir, &snake);
@@ -175,24 +176,47 @@ int main(void) {
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.sym) {
 						case SDLK_UP:
-							if(y_dir == 1) break;
-							y_dir = -1;
-							x_dir = 0;
+							if(!paused) {
+								if(y_dir == 1) break;
+								y_dir = -1;
+								x_dir = 0;
+							}
 							break;
 						case SDLK_DOWN:
-							if(y_dir == -1) break;
-							y_dir = 1;
-							x_dir = 0;
+							if(!paused) {
+								if(y_dir == -1) break;
+								y_dir = 1;
+								x_dir = 0;
+							}
 							break;
 						case SDLK_LEFT:
-							if(x_dir == 1) break;
-							x_dir = -1;
-							y_dir = 0;
+							if(!paused) {
+								if(x_dir == 1) break;
+								x_dir = -1;
+								y_dir = 0;
+							}
 							break;
 						case SDLK_RIGHT:
-							if(x_dir == -1) break;
-							x_dir = 1;
-							y_dir = 0;
+							if(!paused) {
+								if(x_dir == -1) break;
+								x_dir = 1;
+								y_dir = 0;
+							}
+							break;
+						case SDLK_SPACE:
+							if(!paused) {
+								temp_x = x_dir;
+								temp_y = y_dir;
+								x_dir = 0;
+								y_dir = 0;
+								paused = true;
+							} else {
+								if(temp_x != 0) x_dir = temp_x;
+								else if(temp_y != 0) y_dir = temp_y;
+								temp_x = 0;
+								temp_y = 0;
+								paused = false;
+							}
 							break;
 						default:
 							break;
@@ -216,7 +240,9 @@ int main(void) {
 		quit = check_collision(&snake);
 		SDL_Delay(GAME_SPEED);
 	}
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Game info", "You losed.", window);
+	char score[30];
+	sprintf(score, "Score %d", snake.len - 1);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Game info", score, window);
 	free(snake.snakeArray);
 	destroy_game(renderer, window);
 	return 0;

@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall 
 FRAMEWORK = -F /Library/Frameworks -framework SDL2
-LINUX_FLAGS = `sdl2-config --cflags --libs`
+LFLAGS = `sdl2-config --cflags --libs`
 
-build_mac: main.c
+build_mac:
 	$(CC) $(CFLAGS) main.c -o main $(FRAMEWORK) 
 
 build_linux:
-	$(CC) main.c -o main $(LINUX_FLAGS) 
+	$(CC) main.c -o main $(LFLAGS) 
 
 run: main
 	./main

@@ -103,13 +103,21 @@ void check_dir(int* x, int* y, Snake* s){
 		}
 		s->snakeArray[i].w = BLOC_SIZE;
 		s->snakeArray[i].h = BLOC_SIZE;
-		i++;
+		++i;
 	}
 }
 
 bool check_collision(Snake* s) {
+	int x_pos = s->snakeArray[0].x, y_pos = s->snakeArray[0].y;
 	if(s->snakeArray[0].x == (SCREEN_WIDTH) || s->snakeArray[0].x < (0)) return true;
 	else if(s->snakeArray[0].y == (SCREEN_HEIGHT) || s->snakeArray[0].y < (0)) return true;
+	else if(s->len > 1){
+		int i = 1;
+		while(i < s->len) {
+			if(x_pos == s->snakeArray[i].x && y_pos == s->snakeArray[i].y) return true;
+			++i;
+		}
+	}
 	return false;
 }
 

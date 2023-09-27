@@ -3,8 +3,8 @@
 #include <SDL2/SDL.h>
 #include <time.h>
 
-#define SCREEN_WIDTH    800
-#define SCREEN_HEIGHT   600
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 #define DEFAULT_POSITION_X 200
 #define DEFAULT_POSITION_Y 200
 #define BLOC_SIZE 20
